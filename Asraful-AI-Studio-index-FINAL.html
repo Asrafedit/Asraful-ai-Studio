@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asraful AI Studio</title>
+<style>
+:root{--bg:#0b0f14;--panel:#121923;--panel2:#1b2530;--text:#f5f7fa;--muted:#9aa6b2;--line:#293440;--accent:#10a37f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Bengali",sans-serif;height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}.side{width:275px;background:#080c11;border-right:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:12px}.brand{font-size:19px;font-weight:800;padding:8px}.brand b{color:var(--accent)}button{font:inherit;cursor:pointer}.new,.side button{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:11px;text-align:left}.history{overflow:auto;flex:1}.history button{display:block;width:100%;border:0;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.main{flex:1;display:flex;flex-direction:column;min-width:0}.top{height:58px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:10px}.menu{display:none;background:none;border:0;color:white;font-size:22px}.status{margin-left:auto;color:var(--muted);font-size:12px}.chat{flex:1;overflow:auto}.welcome{max-width:850px;margin:10vh auto 0;padding:20px;text-align:center}.welcome h1{font-size:34px;margin:0 0 10px}.welcome p{color:var(--muted)}.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:25px}.card{padding:15px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;text-align:left}.card small{display:block;color:var(--muted);margin-top:5px}.messages{max-width:850px;margin:auto;padding:22px 16px 125px}.msg{display:flex;gap:12px;margin:22px 0;line-height:1.65}.avatar{width:30px;height:30px;min-width:30px;border-radius:8px;background:var(--panel2);display:grid;place-items:center;font-size:12px}.user .avatar{background:var(--accent)}.bubble{white-space:pre-wrap;max-width:calc(100% - 42px)}.user{flex-direction:row-reverse}.user .bubble{text-align:right}.composer-wrap{position:fixed;left:275px;right:0;bottom:0;padding:14px 16px 18px;background:linear-gradient(transparent,var(--bg) 30%)}.composer{max-width:850px;margin:auto;display:flex;align-items:end;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px}.composer textarea{flex:1;background:transparent;color:white;border:0;outline:0;resize:none;padding:10px;max-height:150px}.icon,.send{border:0;border-radius:9px;padding:9px}.icon{background:transparent;color:#c6ced7}.send{background:var(--accent);color:white}.hint{text-align:center;color:#697583;font-size:11px;margin-top:5px}.userbar{display:none;align-items:center;gap:8px;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:10px}.userbar img{width:30px;height:30px;border-radius:50%}.login{background:var(--accent)!important;color:white!important;border:0!important;text-align:center!important;width:100%}.overlay{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:18px;z-index:10}.modal{width:min(500px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}.modal input{width:100%;padding:11px;background:#0b1016;color:white;border:1px solid var(--line);border-radius:9px;margin:8px 0 14px}.primary{background:var(--accent);color:white;border:0;padding:10px 14px;border-radius:9px}.preview{max-width:100%;max-height:55vh;border-radius:10px}.toast{position:fixed;left:50%;bottom:85px;transform:translateX(-50%);background:#202a35;padding:10px 14px;border-radius:9px;display:none;z-index:20}
+@media(max-width:760px){.side{position:fixed;top:0;bottom:0;left:-290px;z-index:5;transition:.2s}.side.open{left:0}.menu{display:block}.composer-wrap{left:0}.welcome{margin-top:7vh}.cards{grid-template-columns:1fr}.status{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side" id="side">
+<div class="brand">Asraful <b>AI Studio</b></div>
+<div id="userbar" class="userbar"></div>
+<button class="new" onclick="newChat()">＋ New chat</button>
+<div class="history" id="history"></div>
+<button onclick="openSettings()">⚙ Settings</button>
+<button id="loginBtn" class="login" onclick="googleLogin()">Sign in with Google</button>
+</aside>
+<main class="main">
+<header class="top"><button class="menu" onclick="toggleSide()">☰</button><strong>Asraful AI Studio</strong><span class="status" id="status">Ready</span></header>
+<section class="chat" id="chat">
+<div class="welcome" id="welcome"><h1>How can I help you?</h1><p>প্রশ্ন করো, লেখা তৈরি করো, voice ব্যবহার করো, অথবা ছবি/ভিডিও preview করো।</p>
+<div class="cards">
+<button class="card" onclick="promptText('একটি সুন্দর বাংলা ক্যাপশন লিখে দাও')">✍️ Writing<small>ক্যাপশন, পোস্ট, গল্প</small></button>
+<button class="card" onclick="promptText('এই বিষয়টি সহজ বাংলায় বুঝিয়ে দাও: ')">💡 Explain<small>সহজভাবে বুঝে নাও</small></button>
+<button class="card" onclick="choose('image')">🖼️ Image<small>ছবি upload ও preview</small></button>
+<button class="card" onclick="choose('video')">🎬 Video<small>ভিডিও upload ও preview</small></button>
+</div></div><div class="messages" id="messages"></div>
+</section></main></div>
+
+<div class="composer-wrap"><div class="composer">
+<button class="icon" onclick="choose('image')">＋</button>
+<textarea id="input" rows="1" placeholder="Message Asraful AI Studio..." oninput="resizeBox(this)" onkeydown="keySend(event)"></textarea>
+<button class="icon" onclick="voiceInput()">🎙</button><button class="send" onclick="sendMessage()">↑</button>
+</div><div class="hint">Firebase Login + Firestore + App Check enabled. AI needs /api/chat backend.</div></div>
+
+<input id="file" type="file" hidden>
+<div class="overlay" id="settingsBox"><div class="modal"><h2>Settings</h2><label>Backend API URL</label><input id="api"><p style="color:#9aa6b2;font-size:13px">ডিফল্ট: /api/chat</p><button class="primary" onclick="saveSettings()">Save</button></div></div>
+<div class="overlay" id="mediaBox"><div class="modal"><h2 id="mediaTitle">Preview</h2><div id="media"></div><button class="primary" onclick="closeMedia()">Close</button></div></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithRedirect,getRedirectResult,signOut} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {getFirestore,collection,addDoc,query,where,orderBy,getDocs,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import {initializeAppCheck, ReCaptchaEnterpriseProvider, getToken} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app-check.js";
+
+const firebaseConfig={apiKey:"AIzaSyA8whR7kKgOVH-qZzhBzP4as5qAYOrdxBs",authDomain:"asraful-ai-studio.firebaseapp.com",projectId:"asraful-ai-studio",storageBucket:"asraful-ai-studio.firebasestorage.app",messagingSenderId:"40427917531",appId:"1:40427917531:web:d4f52b7eadf6ca9d82fcfe",measurementId:"G-XZCRLQYRB3"};
+const app=initializeApp(firebaseConfig);
+
+// Firebase App Check — replace this placeholder with the SAME
+// reCAPTCHA Enterprise Web key used when registering "asra ai web"
+// in Firebase Console → Security → App Check.
+const RECAPTCHA_ENTERPRISE_SITE_KEY="6LdsmNktAAAAAPepMgxLUDmTUDKe6Wa-_CSxRvMr";
+const appCheck=initializeAppCheck(app,{
+  provider:new ReCaptchaEnterpriseProvider(RECAPTCHA_ENTERPRISE_SITE_KEY),
+  isTokenAutoRefreshEnabled:true
+});
+
+const auth=getAuth(app),db=getFirestore(app);
+const provider=new GoogleAuthProvider();
+let current=[],apiUrl=localStorage.getItem("asraful_api")||"/api/chat",user=null;
+const $=id=>document.getElementById(id);
+function toast(t){$("toast").textContent=t;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",2200)}
+window.toggleSide=()=>$("side").classList.toggle("open");
+window.resizeBox=x=>{x.style.height="auto";x.style.height=Math.min(x.scrollHeight,150)+"px"};
+window.keySend=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();window.sendMessage()}};
+window.promptText=x=>{$("input").value=x;$("input").focus();window.resizeBox($("input"))};
+function addMessage(role,text,save=true){$("welcome").style.display="none";let d=document.createElement("div");d.className="msg "+role;d.innerHTML='<div class="avatar">'+(role==="user"?"You":"AI")+'</div><div class="bubble"></div>';d.querySelector(".bubble").textContent=text;$("messages").appendChild(d);$("chat").scrollTop=$("chat").scrollHeight;if(save)current.push({role:role==="user"?"user":"assistant",content:text})}
+window.sendMessage=async()=>{let x=$("input"),t=x.value.trim();if(!t)return;addMessage("user",t);x.value="";window.resizeBox(x);$("status").textContent="Thinking…";try{let appCheckToken="";
+try{
+  const tokenResult=await getToken(appCheck,false);
+  appCheckToken=tokenResult.token||"";
+}catch(e){
+  console.warn("App Check token unavailable:",e);
+}
+let r=await fetch(apiUrl,{
+  method:"POST",
+  headers:{
+    "Content-Type":"application/json",
+    ...(appCheckToken?{"X-Firebase-AppCheck":appCheckToken}:{})
+  },
+  body:JSON.stringify({messages:current})
+});let d=await r.json();if(!r.ok)throw Error(d.details||d.error||("HTTP "+r.status));addMessage("assistant",d.reply||d.message||d.content||"No reply")}catch(e){addMessage("assistant","AI backend error: "+e.message)}$("status").textContent="Ready";await saveChat()};
+async function saveChat(){if(!user||current.length===0)return;try{await addDoc(collection(db,"users",user.uid,"chats"),{title:current.find(x=>x.role==="user")?.content?.slice(0,60)||"New chat",messages:current,createdAt:serverTimestamp()});await loadHistory()}catch(e){console.error(e)}}
+async function loadHistory(){if(!user)return;try{let q=query(collection(db,"users",user.uid,"chats"),orderBy("createdAt","desc"));let snap=await getDocs(q);let h=$("history");h.innerHTML="";snap.forEach(doc=>{let c=doc.data(),b=document.createElement("button");b.textContent=c.title||"Chat";b.onclick=()=>{current=[];$("messages").innerHTML="";$("welcome").style.display="none";(c.messages||[]).forEach(m=>addMessage(m.role,m.content,false))};h.appendChild(b)})}catch(e){console.error(e);toast("Firestore history load failed")}}
+window.newChat=()=>{current=[];$("messages").innerHTML="";$("welcome").style.display="block"};
+window.openSettings=()=>{$("api").value=apiUrl;$("settingsBox").style.display="flex"};
+window.saveSettings=()=>{apiUrl=$("api").value.trim()||"/api/chat";localStorage.setItem("asraful_api",apiUrl);$("settingsBox").style.display="none";toast("Settings saved")};
+window.googleLogin=async()=>{try{await signInWithRedirect(auth,provider)}catch(e){toast(e.message)}};
+window.choose=kind=>{let f=$("file");f.accept=kind==="image"?"image/*":"video/*";f.click()};
+$("file").onchange=()=>{let f=$("file").files[0];if(!f)return;let u=URL.createObjectURL(f);$("mediaTitle").textContent=f.name;$("media").innerHTML=f.type.startsWith("image/")?'<img class="preview" src="'+u+'">':'<video class="preview" controls src="'+u+'"></video>';$("mediaBox").style.display="flex";$("file").value=""};
+window.closeMedia=()=>{$("mediaBox").style.display="none";$("media").innerHTML=""};
+window.voiceInput=()=>{let R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return toast("এই browser-এ voice input নেই");let r=new R();r.lang="bn-BD";r.onresult=e=>window.promptText(e.results[0][0].transcript);r.start();toast("বলুন…")};
+
+onAuthStateChanged(auth,async u=>{user=u;if(u){$("loginBtn").textContent="Sign out";$("loginBtn").onclick=()=>signOut(auth);$("userbar").style.display="flex";$("userbar").innerHTML=(u.photoURL?'<img src="'+u.photoURL+'">':"👤")+"<span>"+(u.displayName||u.email)+"</span>";await loadHistory()}else{$("loginBtn").textContent="Sign in with Google";$("loginBtn").onclick=window.googleLogin;$("userbar").style.display="none"}});
+try{await getRedirectResult(auth)}catch(e){console.error(e)}
+</script>
+</body></html>
